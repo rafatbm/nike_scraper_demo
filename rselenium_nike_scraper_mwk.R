@@ -1,23 +1,22 @@
-# Installing packages
+# Instal·lació de paquets
 install.packages("RSelenium")
 install.packages("rvest")
 install.packages("dplyr")
 
 
-# Loading libraries
-library(tidyverse)
+# Càrrega de llibreries
 library(RSelenium)
-library(rvest)
-library(netstat)
-library(dplyr)
 
 
-# Close all ports
+
+# Tanquem els ports
 
 system("taskkill /im java.exe /f", intern=FALSE, ignore.stdout=FALSE)
 
 
-# Seting up Selenium server and a browser.
+
+# Configurem el servidor de Selenium i el navegador. S'haurà de borrar la llicencia de Chromedriver perque no doni problemes
+# Es pot trobar a C:\Users\ElTeuUsuari\AppData\Local\binman\binman_chromedriver\win32\123.0.6312.106
 
 rD <- rsDriver(port = 4567L,
                browser = "chrome",
@@ -31,26 +30,29 @@ rD <- rsDriver(port = 4567L,
 )
 
 
-# Access to the client
+# Accés al client
 
 remDr <- rD$client
 
 
-## MAN PRODUCTS
 
-# Opening the browser and navigate to the website
+## SABATES ESPORTIVES D'HOME
+
+# Obrim el navegador i anem a la plana web.
 
 remDr$open()
 remDr$navigate("https://www.nike.com/es/w/hombre-zapatillas-nik1zy7ok")
 Sys.sleep(5)
 
 
-# Click on the Close button
+# Fem click al botó del pop-up que surt per tancar-lo.
 
 remDr$findElement(using = "xpath", "//button[text()='Aceptar todas']")$clickElement()
 
 
-# Scroll
+# Scroll: Utilitzem un while que busca a quina altura està l'ultim scroll. Torna a fer scroll fins que l'altura
+# de l'últim scroll es igual que l'altura de l'scroll anterior.
+
 while(TRUE){
         height = remDr$executeScript("return document.body.scrollHeight")
         print(height)
@@ -62,9 +64,14 @@ while(TRUE){
         }
         
 }
+
+# Deixem una pausa de 10 segons per carregar dades.
+
 Sys.sleep(10)
 
-# Selecting data that we will add in df using CSS and XPATH. Using lapply to get all data in one value.
+
+
+# Seleccionem les dades que agregarem al dataset utilitzant CSS i XPATH.
 
 sneaker_name <- remDr$findElements(using = "css", ".product-card__link-overlay")
 names <- unlist(lapply(sneaker_name, function(x) {
@@ -92,7 +99,7 @@ subtitle <- unlist(lapply(subtitle_elements, function(x) {
 
 
 
-# Adding all data in a df for male products
+# Afegim totes les dades a un df
 
 nike_df_m <- data.frame(
         names,
@@ -104,21 +111,20 @@ nike_df_m <- data.frame(
 )  
 
 
-## WOMEN PRODUCTS
+# Repetirem el proces amb els productes de dona i nens
 
-# Opening the browser and navigate to the website
+
+# SABATES ESPORTIVES DE DONA
 
 remDr$open()
 remDr$navigate("https://www.nike.com/es/w/mujer-zapatillas-5e1x6zy7ok")
 Sys.sleep(5)
 
 
-# Click on the Close button
 
 remDr$findElement(using = "xpath", "//button[text()='Aceptar todas']")$clickElement()
 
 
-# Scroll
 
 while(TRUE){
         height = remDr$executeScript("return document.body.scrollHeight")
@@ -134,7 +140,6 @@ while(TRUE){
 }
 Sys.sleep(10)
 
-# Selecting data that we will add in df using CSS and XPATH. Using lapply to get all data in one value.
 
 sneaker_name <- remDr$findElements(using = "css", ".product-card__link-overlay")
 names <- unlist(lapply(sneaker_name, function(x) {
@@ -161,8 +166,6 @@ subtitle <- unlist(lapply(subtitle_elements, function(x) {
 }))
 
 
-
-# Adding all data in a df for male products
 
 nike_df_w <- data.frame(
         names,
@@ -174,21 +177,18 @@ nike_df_w <- data.frame(
 )  
 
 
-## KIDS PRODUCTS
 
-# Opening the browser and navigate to the website
+# SABATES ESPORTIVES DE NEN
 
 remDr$open()
 remDr$navigate("https://www.nike.com/es/w/ninos-zapatillas-v4dhzy7ok")
 Sys.sleep(5)
 
 
-# Click on the Close button
 
 remDr$findElement(using = "xpath", "//button[text()='Aceptar todas']")$clickElement()
 
 
-# Scroll
 
 while(TRUE){
         height = remDr$executeScript("return document.body.scrollHeight")
@@ -204,8 +204,9 @@ while(TRUE){
         
 }
 
+
 Sys.sleep(10)
-# Selecting data that we will add in df using CSS and XPATH. Using lapply to get all data in one value.
+#
 
 sneaker_name <- remDr$findElements(using = "css", ".product-card__link-overlay")
 names <- unlist(lapply(sneaker_name, function(x) {
@@ -233,8 +234,6 @@ subtitle <- unlist(lapply(subtitle_elements, function(x) {
 
 
 
-# Adding all data in a df for male products
-
 nike_df_k <- data.frame(
         names,
         price,
@@ -245,14 +244,14 @@ nike_df_k <- data.frame(
 )  
 
 
+# Obtenim el dataset final, tanquem el navegador i el passem a CSV
+
 Dataset_of_Nike_Sneakers = rbind(nike_df_m, nike_df_w, nike_df_k)
 
 
-# Cerrar el navegador
 remDr$close()
 rD$server$stop()
 
-# Extracting df to a csv
 
 write.csv2(
         nike_sneakers_df,
@@ -260,6 +259,11 @@ write.csv2(
         fileEncoding = "UTF-8",
         row.names = FALSE
 )
+
+# Extreiem les llibreries utilitzades en format txt:
+
+sink("libraries.txt")
+cat("Package RSelenium version 1.7.9")
 
 # Bibliografia:
 # https://www.zenrows.com/blog/rselenium#scrape
