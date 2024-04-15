@@ -253,17 +253,18 @@ remDr$close()
 rD$server$stop()
 
 
-write.csv2(
-        nike_sneakers_df,
-        file = "nike_df.csv",
+rite.csv2(
+        Dataset_of_Nike_Sneakers,
+        file = "Dataset_of_Nike_Sneakers.csv",
         fileEncoding = "UTF-8",
         row.names = FALSE
-)
 
 # Extreiem les llibreries utilitzades en format txt:
 
 sink("libraries.txt")
 cat("Package RSelenium version 1.7.9")
+cat("\n")
+cat("Package rvest version 1.0.4")
 
 # Bibliografia:
 # https://www.zenrows.com/blog/rselenium#scrape
